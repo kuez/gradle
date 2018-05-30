@@ -160,7 +160,7 @@ class ScalaAnnotationProcessingIntegrationTest extends AbstractIntegrationSpec {
     static String lombokDependency() {
         """
             dependencies {
-                compileOnly 'org.projectlombok:lombok:1.16.16'
+                compileOnly 'org.projectlombok:lombok:1.16.22'
             }
         """
     }
