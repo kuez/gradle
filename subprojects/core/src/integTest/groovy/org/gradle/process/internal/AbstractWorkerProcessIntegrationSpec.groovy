@@ -31,6 +31,7 @@ import org.gradle.cache.internal.CacheFactory
 import org.gradle.cache.internal.CacheScopeMapping
 import org.gradle.cache.internal.DefaultCacheRepository
 import org.gradle.cache.internal.DefaultCacheScopeMapping
+import org.gradle.integtests.fixtures.executer.IntegrationTestBuildContext
 import org.gradle.internal.id.LongIdGenerator
 import org.gradle.internal.installation.CurrentGradleInstallation
 import org.gradle.internal.jvm.inspection.CachingJvmVersionDetector
@@ -52,10 +53,11 @@ import org.gradle.testfixtures.internal.NativeServicesTestFixture
 import org.gradle.util.GradleVersion
 import org.gradle.util.RedirectStdOutAndErr
 import org.junit.Rule
+import spock.lang.Shared
 import spock.lang.Specification
 
 abstract class AbstractWorkerProcessIntegrationSpec extends Specification {
-    final DefaultServiceRegistry services = (DefaultServiceRegistry) ServiceRegistryBuilder.builder()
+    @Shared DefaultServiceRegistry services = (DefaultServiceRegistry) ServiceRegistryBuilder.builder()
             .parent(NativeServicesTestFixture.getInstance())
             .provider(new GlobalScopeServices(false))
             .build()
@@ -65,7 +67,7 @@ abstract class AbstractWorkerProcessIntegrationSpec extends Specification {
     @Rule
     final RedirectStdOutAndErr stdout = new RedirectStdOutAndErr()
     final CacheFactory factory = services.get(CacheFactory.class)
-    final CacheScopeMapping scopeMapping = new DefaultCacheScopeMapping(tmpDir.testDirectory, null, GradleVersion.current())
+    final CacheScopeMapping scopeMapping = new DefaultCacheScopeMapping(IntegrationTestBuildContext.INSTANCE.gradleUserHomeDir, null, GradleVersion.current())
     final CacheRepository cacheRepository = new DefaultCacheRepository(scopeMapping, factory)
     final ModuleRegistry moduleRegistry = new DefaultModuleRegistry(CurrentGradleInstallation.get())
     final ClassPathRegistry classPathRegistry = new DefaultClassPathRegistry(new DefaultClassPathProvider(moduleRegistry), new WorkerProcessClassPathProvider(cacheRepository))
@@ -73,7 +75,7 @@ abstract class AbstractWorkerProcessIntegrationSpec extends Specification {
     final OutputEventListener outputEventListener = new TestOutputEventListener()
     DefaultWorkerProcessFactory workerFactory = new DefaultWorkerProcessFactory(loggingManager(LogLevel.DEBUG), server, classPathRegistry, new LongIdGenerator(), tmpDir.file("gradleUserHome"), new TmpDirTemporaryFileProvider(), execHandleFactory, new CachingJvmVersionDetector(new DefaultJvmVersionDetector(execHandleFactory)), outputEventListener, Stub(MemoryManager))
 
-    def cleanup() {
+    def cleanupSpec() {
         services.close()
     }
 
